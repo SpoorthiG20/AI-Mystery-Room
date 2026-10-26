@@ -1,0 +1,18 @@
+{
+  "name": "ai-mystery-room",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A full-stack AI-powered mystery investigation experience",
+  "scripts": {
+    "dev": "concurrently -n server,client -c green,magenta \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "build": "npm run build --prefix client",
+    "test:server": "npm test --prefix server",
+    "test:client": "npm test --prefix client",
+    "test": "npm run test:server && npm run test:client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
