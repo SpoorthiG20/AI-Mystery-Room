@@ -12,7 +12,10 @@ before(async () => {
 })
 
 after(async () => {
-  if (server) await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()))
+  if (server)
+    await new Promise((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    )
 })
 
 test('health endpoint reports service and current database state', async () => {
@@ -20,11 +23,18 @@ test('health endpoint reports service and current database state', async () => {
   const result = await response.json()
   assert.equal(response.status, 200)
   assert.equal(result.status, 'ok')
-  assert.ok(['connected', 'configured-not-connected', 'not-configured'].includes(result.database))
+  assert.ok(
+    ['connected', 'configured-not-connected', 'not-configured'].includes(
+      result.database,
+    ),
+  )
 })
 
 test('case and dashboard routes reject unauthenticated requests', async () => {
-  const [cases, dashboard] = await Promise.all([fetch(`${baseUrl}/api/cases`), fetch(`${baseUrl}/api/dashboard`)] )
+  const [cases, dashboard] = await Promise.all([
+    fetch(`${baseUrl}/api/cases`),
+    fetch(`${baseUrl}/api/dashboard`),
+  ])
   assert.equal(cases.status, 401)
   assert.equal(dashboard.status, 401)
 })

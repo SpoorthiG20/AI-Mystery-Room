@@ -1,13 +1,19 @@
 const pendingLifetimeMs = 15 * 60 * 1000
 const completedLifetimeMs = 24 * 60 * 60 * 1000
 
-export async function claimGenerationRequest(Model, ownerId, key, now = new Date()) {
-  const createClaim = () => Model.create({
-    ownerId,
-    key,
-    status: 'pending',
-    expiresAt: new Date(now.getTime() + pendingLifetimeMs),
-  })
+export async function claimGenerationRequest(
+  Model,
+  ownerId,
+  key,
+  now = new Date(),
+) {
+  const createClaim = () =>
+    Model.create({
+      ownerId,
+      key,
+      status: 'pending',
+      expiresAt: new Date(now.getTime() + pendingLifetimeMs),
+    })
 
   try {
     return { kind: 'claimed', request: await createClaim() }
@@ -27,7 +33,10 @@ export async function claimGenerationRequest(Model, ownerId, key, now = new Date
   }
 
   if (!existing) return { kind: 'pending', request: null }
-  return { kind: existing.status === 'completed' ? 'completed' : 'pending', request: existing }
+  return {
+    kind: existing.status === 'completed' ? 'completed' : 'pending',
+    request: existing,
+  }
 }
 
 export function completedGenerationExpiry(now = new Date()) {

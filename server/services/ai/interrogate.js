@@ -1,9 +1,15 @@
 import { GoogleGenAI } from '@google/genai'
 import { getGeminiModels } from '../../config/ai.js'
 
-export async function generateSuspectReply({ suspect, discoveredEvidence, question }) {
+export async function generateSuspectReply({
+  suspect,
+  discoveredEvidence,
+  question,
+}) {
   if (!process.env.GEMINI_API_KEY) {
-    const error = new Error('Suspect conversations are unavailable until GEMINI_API_KEY is configured on the server.')
+    const error = new Error(
+      'Suspect conversations are unavailable until GEMINI_API_KEY is configured on the server.',
+    )
     error.status = 503
     throw error
   }
@@ -15,6 +21,10 @@ export async function generateSuspectReply({ suspect, discoveredEvidence, questi
     config: { temperature: 0.45 },
   })
   const answer = response.text?.trim()
-  if (!answer) throw Object.assign(new Error('The suspect could not answer right now. Please try again.'), { status: 502 })
+  if (!answer)
+    throw Object.assign(
+      new Error('The suspect could not answer right now. Please try again.'),
+      { status: 502 },
+    )
   return answer.slice(0, 2000)
 }

@@ -4,14 +4,29 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { loadServerEnvironment } from '../config/environment.js'
-import { DEFAULT_GEMINI_MODEL, DEFAULT_GEMINI_RECOVERY_MODELS, getGeminiModels } from '../config/ai.js'
+import {
+  DEFAULT_GEMINI_MODEL,
+  DEFAULT_GEMINI_RECOVERY_MODELS,
+  getGeminiModels,
+} from '../config/ai.js'
 
-const protectedKeys = ['MONGODB_URI', 'SESSION_SECRET', 'GEMINI_API_KEY', 'GEMINI_MODEL', 'GEMINI_FALLBACK_MODEL', 'GEMINI_RECOVERY_MODELS']
+const protectedKeys = [
+  'MONGODB_URI',
+  'SESSION_SECRET',
+  'GEMINI_API_KEY',
+  'GEMINI_MODEL',
+  'GEMINI_FALLBACK_MODEL',
+  'GEMINI_RECOVERY_MODELS',
+]
 
 async function withCleanEnvironment(callback) {
-  const previous = Object.fromEntries(protectedKeys.map((key) => [key, process.env[key]]))
+  const previous = Object.fromEntries(
+    protectedKeys.map((key) => [key, process.env[key]]),
+  )
   for (const key of protectedKeys) delete process.env[key]
-  try { await callback() } finally {
+  try {
+    await callback()
+  } finally {
     for (const key of protectedKeys) {
       if (previous[key] === undefined) delete process.env[key]
       else process.env[key] = previous[key]
@@ -24,7 +39,10 @@ test('loads MongoDB, session, and Gemini variables from the project-root .env', 
     const base = await mkdtemp(join(tmpdir(), 'ai-mystery-env-'))
     const projectRoot = join(base, 'AI-mystery')
     await mkdir(projectRoot)
-    await writeFile(join(projectRoot, '.env'), 'MONGODB_URI=mongodb://test.invalid/test\nSESSION_SECRET=unit-test-session-secret\nGEMINI_API_KEY=unit-test-gemini-key\nGEMINI_MODEL=gemini-3.5-flash\nGEMINI_FALLBACK_MODEL=gemini-3.6-flash\nGEMINI_RECOVERY_MODELS=gemini-3.5-flash-lite,gemini-3.1-flash-lite\n')
+    await writeFile(
+      join(projectRoot, '.env'),
+      'MONGODB_URI=mongodb://test.invalid/test\nSESSION_SECRET=unit-test-session-secret\nGEMINI_API_KEY=unit-test-gemini-key\nGEMINI_MODEL=gemini-3.5-flash\nGEMINI_FALLBACK_MODEL=gemini-3.6-flash\nGEMINI_RECOVERY_MODELS=gemini-3.5-flash-lite,gemini-3.1-flash-lite\n',
+    )
     try {
       const loaded = loadServerEnvironment(projectRoot)
       assert.deepEqual(loaded, [join(projectRoot, '.env')])
@@ -32,10 +50,19 @@ test('loads MongoDB, session, and Gemini variables from the project-root .env', 
       assert.equal(process.env.SESSION_SECRET, 'unit-test-session-secret')
       assert.equal(process.env.GEMINI_API_KEY, 'unit-test-gemini-key')
       assert.equal(process.env.GEMINI_MODEL, 'gemini-3.5-flash')
-      assert.deepEqual(getGeminiModels(), { primary: 'gemini-3.5-flash', fallback: 'gemini-3.6-flash', recovery: ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'] })
+      assert.deepEqual(getGeminiModels(), {
+        primary: 'gemini-3.5-flash',
+        fallback: 'gemini-3.6-flash',
+        recovery: ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'],
+      })
       assert.notEqual(getGeminiModels().primary, DEFAULT_GEMINI_MODEL)
-      assert.notDeepEqual(getGeminiModels().recovery, DEFAULT_GEMINI_RECOVERY_MODELS)
-    } finally { await rm(base, { recursive: true, force: true }) }
+      assert.notDeepEqual(
+        getGeminiModels().recovery,
+        DEFAULT_GEMINI_RECOVERY_MODELS,
+      )
+    } finally {
+      await rm(base, { recursive: true, force: true })
+    }
   })
 })
 
@@ -44,7 +71,10 @@ test('supports the explicitly stated sibling AI-mystery.env location without mov
     const base = await mkdtemp(join(tmpdir(), 'ai-mystery-env-'))
     const projectRoot = join(base, 'AI-mystery')
     await mkdir(projectRoot)
-    await writeFile(join(base, 'AI-mystery.env'), 'MONGODB_URI=mongodb://fallback.invalid/test\nSESSION_SECRET=fallback-session-secret\nGEMINI_API_KEY=fallback-gemini-key\nGEMINI_MODEL=gemini-sibling-model\n')
+    await writeFile(
+      join(base, 'AI-mystery.env'),
+      'MONGODB_URI=mongodb://fallback.invalid/test\nSESSION_SECRET=fallback-session-secret\nGEMINI_API_KEY=fallback-gemini-key\nGEMINI_MODEL=gemini-sibling-model\n',
+    )
     try {
       const loaded = loadServerEnvironment(projectRoot)
       assert.deepEqual(loaded, [join(base, 'AI-mystery.env')])
@@ -52,7 +82,9 @@ test('supports the explicitly stated sibling AI-mystery.env location without mov
       assert.equal(process.env.SESSION_SECRET, 'fallback-session-secret')
       assert.equal(process.env.GEMINI_API_KEY, 'fallback-gemini-key')
       assert.equal(process.env.GEMINI_MODEL, 'gemini-sibling-model')
-    } finally { await rm(base, { recursive: true, force: true }) }
+    } finally {
+      await rm(base, { recursive: true, force: true })
+    }
   })
 })
 
